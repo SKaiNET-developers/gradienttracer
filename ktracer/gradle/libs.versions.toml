@@ -1,6 +1,8 @@
 [versions]
 agp = "8.7.3"
-kotlin = "2.1.20"
+# Must match the Kotlin version skainet-io-gguf was built with (SKaiNET's own pin) — its
+# published .kotlin_module metadata isn't readable by an older compiler.
+kotlin = "2.4.10"
 kotlinx-coroutines = "1.10.2"
 android-minSdk = "24"
 android-compileSdk = "35"
@@ -9,7 +11,13 @@ nexus-publish = "2.0.0"
 testng = "7.10.2"
 binaryCompatibility = "0.17.0"
 moduleGraphSouza = "0.12.0"
-kotlinxIo = "0.7.0"
+# Bumped from 0.7.0 to match skainet-io-gguf's own pin (SKaiNET's gradle/libs.versions.toml) —
+# a much older kotlinx-io on this module's classpath risks a Source ABI mismatch against a
+# library compiled against a newer one.
+kotlinxIo = "0.9.1"
+# The project previously known as "sk-ai-net" is now SKaiNET, publishing to Maven Central under
+# sk.ainet.core:* instead of GitHub Packages. See skainet-io-gguf below.
+skainet = "0.40.1"
 
 [libraries]
 kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
@@ -17,6 +25,9 @@ kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotl
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 nexus-publish = { module = "io.github.gradle-nexus.publish-plugin:io.github.gradle-nexus.publish-plugin.gradle.plugin", version.ref = "nexus-publish" }
 kotlinx-io-core = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinxIo" }
+# Replaces the legacy sk.ai.net:gguf:0.0.5 artifact — same GGUFReader/GGUFValueType shape,
+# actively maintained, published to Maven Central.
+skainet-io-gguf = { module = "sk.ainet.core:skainet-io-gguf", version.ref = "skainet" }
 
 [plugins]
 androidLibrary = { id = "com.android.library", version.ref = "agp" }

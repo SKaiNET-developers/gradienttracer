@@ -41,10 +41,14 @@ class TestSuiteExecutor(
     ): TestExecutionResult = withContext(Dispatchers.Default) {
         try {
             val startTime = System.currentTimeMillis()
-            
-            // Execute the test case
-            val result = testCase.execute()
-            
+
+            // TODO: TestCase (TestSuiteDSL.kt) has no execute() — the DSL's expect(...) sets
+            // `result` directly, there's no notion of computing it at runtime. This function was
+            // already unresolvable before this migration (pre-existing, unrelated to the
+            // dependency swap); left as a stub since inventing execution semantics isn't a safe
+            // guess. This whole class is dead code — nothing in Main.kt calls it.
+            val result = testCase.result ?: error("TestCase '${testCase.description}' has no result to store")
+
             val executionTime = System.currentTimeMillis() - startTime
             
             TestExecutionResult(
@@ -80,29 +84,25 @@ class TestSuiteExecutor(
         tsFolder.createDirectories()
         
         val ggufPath = tsFolder.resolve("${result.name}.gguf")
-        
-        // Store tensors and metadata in GGUF format
-        GGUFWriter(ggufPath).use { writer ->
-            writer.addMetadata("experiment_description", result.description)
-            writer.addMetadata("execution_time_ms", result.executionTimeMs.toString())
-            writer.addMetadata("success", result.success.toString())
-            result.error?.let { writer.addMetadata("error", it) }
-            
-            // Store inputs
-            result.inputs.forEachIndexed { index, input ->
-                writer.addTensor("input_$index", input)
-            }
-            
-            // Store result
-            writer.addTensor("result", result.result)
+
+        val metadata = buildMap {
+            put("experiment_description", result.description)
+            put("execution_time_ms", result.executionTimeMs.toString())
+            put("success", result.success.toString())
+            result.error?.let { put("error", it) }
         }
-        
-        // Generate DOT visualization if enabled
+        val tensors = buildMap {
+            result.inputs.forEachIndexed { index, input -> put("input_$index", input) }
+            put("result", result.result)
+        }
+        writeGgufTestData(ggufPath, metadata, tensors)
+
+        // TODO: trace()/dag_2_dot() don't exist anywhere in this codebase either — this looks
+        // like a port of gt/dot's Python DAG-visualization concept (gt/dot/dag.py, dag2dot.py)
+        // that was never actually written on the Kotlin side. Pre-existing, unrelated to this
+        // migration. Left disabled rather than stubbed with fabricated graph-tracing logic.
         if (generateDot && result.success) {
-            val graph = trace(result.result)
-            val dot = dag_2_dot(graph)
-            val dotPath = tsFolder.resolve("${result.name}.dot")
-            dot.render(dotPath.toString())
+            error("DOT visualization (trace/dag_2_dot) isn't implemented on the Kotlin side yet")
         }
     }
 

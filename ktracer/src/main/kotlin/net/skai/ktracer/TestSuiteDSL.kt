@@ -61,24 +61,18 @@ class TestRunner(private val outputPath: Path) {
         useCase.getSuites().forEach { suite ->
             val suitePath = outputPath.resolve("TS-${suite.name}")
             suitePath.createDirectories()
-            
+
             suite.getCases().forEach { case ->
                 val ggufPath = suitePath.resolve("UC-${useCase.name}_${case.hashCode()}.gguf")
-                
+
                 // Store test case in GGUF format
                 val tensors = mutableMapOf<String, Any>()
                 case.inputs.forEachIndexed { index, input ->
                     tensors["input_$index"] = input
                 }
                 case.result?.let { tensors["result"] = it }
-                
-                // Use GGUFWriter to store the tensors and metadata
-                GGUFWriter(ggufPath).use { writer ->
-                    writer.addMetadata("experiment_description", case.description)
-                    tensors.forEach { (name, tensor) ->
-                        writer.addTensor(name, tensor)
-                    }
-                }
+
+                writeGgufTestData(ggufPath, mapOf("experiment_description" to case.description), tensors)
             }
         }
     }
