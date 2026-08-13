@@ -2,8 +2,8 @@ package net.skai.ktracer
 
 import kotlinx.io.asSource
 import kotlinx.io.buffered
-import sk.ai.net.gguf.GGUFReader
-import sk.ai.net.gguf.GGUFValueType
+import sk.ainet.io.gguf.GGUFReader
+import sk.ainet.io.gguf.GGUFValueType
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path
