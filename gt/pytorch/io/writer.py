@@ -58,9 +58,18 @@ def store_experiment_as_gguf(experiment_description: str, tensors: dict, operati
                     writer.add_uint32(key, param_value)
             elif isinstance(param_value, float):
                 writer.add_float32(key, param_value)
+            elif isinstance(param_value, str):
+                # A named option, e.g. op.average = "macro" for a metric case
+                writer.add_string(key, param_value)
             elif isinstance(param_value, (list, tuple)):
                 # Store as array of ints (for stride, padding tuples)
                 writer.add_array(key, [int(v) for v in param_value])
+            else:
+                # A parameter that is not written cannot be reproduced by a consumer.
+                raise TypeError(
+                    f"op_params['{param_name}'] has unsupported type "
+                    f"{type(param_value).__name__}; use int, float, str, list or tuple"
+                )
 
     writer.add_tensor("result", result_le)
     writer.write_header_to_file()
