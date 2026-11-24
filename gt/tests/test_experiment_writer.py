@@ -1,6 +1,9 @@
-import torch
-import gguf
+import os
+import tempfile
 import unittest
+
+import gguf
+import torch
 
 from gt.pytorch.io.writer import store_experiment_as_gguf
 
@@ -34,18 +37,23 @@ class TestExperiment(unittest.TestCase):
         def addition_op(tensor1, tensor2):
             return tensor1 + tensor2
 
-        # Path to the gguf file
-        gguf_file_path = 'test_experiment.gguf'
+        with tempfile.TemporaryDirectory() as tmp:
+            gguf_file_path = os.path.join(tmp, 'test_experiment.gguf')
 
-        # Call the io function with the addition callback
-        store_experiment_as_gguf("Simple addition", x, y, addition_op, gguf_file_path)
+            # Tensors are passed by name; the callback gets them in dict order
+            store_experiment_as_gguf(
+                "Simple addition", {"input_0": x, "input_1": y}, addition_op, gguf_file_path
+            )
 
-        # Read back the data from the gguf file
-        reader = gguf.GGUFReader(gguf_file_path)
-        read_operand1 = read_tensor(reader, 0)
-        read_operand2 = read_tensor(reader, 1)
-        description = read_description(reader)
-        read_result = read_tensor(reader, 2)
+            # Read back the data from the gguf file
+            reader = gguf.GGUFReader(gguf_file_path)
+            self.assertEqual(
+                ["input_0", "input_1", "result"], [t.name for t in reader.tensors]
+            )
+            read_operand1 = read_tensor(reader, 0)
+            read_operand2 = read_tensor(reader, 1)
+            description = read_description(reader)
+            read_result = read_tensor(reader, 2)
 
         # Assert the read values are equal to the original values
         self.assertTrue(torch.allclose(x, read_operand1))
