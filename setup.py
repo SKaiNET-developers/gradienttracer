@@ -20,7 +20,7 @@ setup(
     author="Michal Harakal",
     version=get_version(),
     packages=find_packages(),
-    install_requires=['click==8.1.7', 'gguf==0.9.1', 'numpy==2.0.0', 'sentencepiece==0.2.0',
+    install_requires=['click==8.1.7', 'gguf==0.18.0', 'numpy==2.0.0', 'sentencepiece==0.2.0',
                       'torch==2.3.1', 'tqdm==4.66.4', 'typer==0.12.3', 'typing_extensions==4.12.2',
                       'typer-cli==0.12.3', 'graphviz==0.20.3'],
     python_requires=">=3.8",
